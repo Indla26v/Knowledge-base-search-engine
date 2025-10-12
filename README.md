@@ -31,7 +31,7 @@ A complete **RAG (Retrieval-Augmented Generation)** powered document search and 
 ### Prerequisites
 
 - Python 3.10+
-- OpenAI API key (optional, for LLM generation)
+- Claude API key (optional, for LLM generation)
 
 ### Installation
 
