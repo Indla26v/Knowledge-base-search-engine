@@ -18,7 +18,7 @@ DEMO_DOCUMENTS = [
 
 def create_sample_documents():
     """Create sample documents for demonstration."""
-    print("📄 Creating sample documents...")
+    print("Creating sample documents...")
     
     # Create sample text document
     sample_text = """
@@ -90,34 +90,34 @@ def create_sample_documents():
     with open("sample_document.txt", "w", encoding="utf-8") as f:
         f.write(sample_text)
     
-    print("✅ Created sample_document.txt")
+    print("Created sample_document.txt")
     
     # Note: For PDF demo, you would need to create a PDF file
     # For this demo, we'll just show the text document upload
-    print("ℹ️  Note: PDF demo requires a PDF file. Using text document for demo.")
+    print({"Note: PDF demo requires a PDF file. Using text document for demo.")
 
 def check_api_health():
     """Check if the API is running."""
     try:
         response = requests.get(f"{API_BASE_URL}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ API is running and healthy")
+            print(" API is running and healthy")
             return True
         else:
-            print(f"❌ API health check failed: {response.status_code}")
+            print(f" API health check failed: {response.status_code}")
             return False
     except requests.exceptions.RequestException as e:
-        print(f"❌ Cannot connect to API: {e}")
-        print("💡 Make sure the backend is running: python backend/app.py")
+        print(f" Cannot connect to API: {e}")
+        print(" Make sure the backend is running: python backend/app.py")
         return False
 
 def upload_documents():
     """Upload sample documents to the API."""
-    print("\n📤 Uploading documents...")
+    print("\nUploading documents...")
     
     # Check if sample document exists
     if not Path("sample_document.txt").exists():
-        print("❌ Sample document not found. Creating it first...")
+        print(" Sample document not found. Creating it first...")
         create_sample_documents()
     
     try:
@@ -128,42 +128,42 @@ def upload_documents():
         
         if response.status_code == 200:
             result = response.json()
-            print("✅ Document uploaded successfully!")
+            print(" Document uploaded successfully!")
             for file_result in result["results"]:
-                print(f"   📄 {file_result['filename']}: {file_result['message']}")
+                print(f"   {file_result['filename']}: {file_result['message']}")
             return True
         else:
-            print(f"❌ Upload failed: {response.status_code}")
+            print(f" Upload failed: {response.status_code}")
             print(f"   Error: {response.text}")
             return False
             
     except Exception as e:
-        print(f"❌ Upload error: {e}")
+        print(f" Upload error: {e}")
         return False
 
 def get_database_stats():
     """Get database statistics."""
-    print("\n📊 Getting database statistics...")
+    print("\n Getting database statistics...")
     
     try:
         response = requests.get(f"{API_BASE_URL}/stats")
         if response.status_code == 200:
             stats = response.json()
-            print("✅ Database statistics:")
-            print(f"   📄 Total chunks: {stats.get('total_chunks', 0)}")
-            print(f"   🗄️  Collection: {stats.get('collection_name', 'N/A')}")
-            print(f"   ✅ Status: {stats.get('status', 'Unknown')}")
+            print(" Database statistics:")
+            print(f"    Total chunks: {stats.get('total_chunks', 0)}")
+            print(f"     Collection: {stats.get('collection_name', 'N/A')}")
+            print(f"    Status: {stats.get('status', 'Unknown')}")
             return True
         else:
-            print(f"❌ Failed to get stats: {response.status_code}")
+            print(f" Failed to get stats: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Stats error: {e}")
+        print(f" Stats error: {e}")
         return False
 
 def ask_questions():
     """Ask sample questions to demonstrate the RAG system."""
-    print("\n❓ Asking questions to demonstrate RAG...")
+    print("\n Asking questions to demonstrate RAG...")
     
     sample_questions = [
         "What is artificial intelligence?",
@@ -174,7 +174,7 @@ def ask_questions():
     ]
     
     for i, question in enumerate(sample_questions, 1):
-        print(f"\n🔍 Question {i}: {question}")
+        print(f"\n Question {i}: {question}")
         
         try:
             # Ask the question
@@ -188,19 +188,19 @@ def ask_questions():
             
             if response.status_code == 200:
                 result = response.json()
-                print(f"🤖 Answer: {result['answer'][:200]}...")
-                print(f"📚 Sources: {result['num_sources']} documents")
+                print(f" Answer: {result['answer'][:200]}...")
+                print(f" Sources: {result['num_sources']} documents")
                 
                 if result.get('sources'):
-                    print("   📄 Source files:")
+                    print("    Source files:")
                     for source in result['sources'][:2]:  # Show first 2 sources
                         print(f"      - {source['filename']} (similarity: {source['similarity_score']:.2f})")
             else:
-                print(f"❌ Query failed: {response.status_code}")
+                print(f" Query failed: {response.status_code}")
                 print(f"   Error: {response.text}")
                 
         except Exception as e:
-            print(f"❌ Query error: {e}")
+            print(f" Query error: {e}")
         
         # Small delay between questions
         time.sleep(1)
@@ -211,13 +211,13 @@ def cleanup():
     try:
         if Path("sample_document.txt").exists():
             Path("sample_document.txt").unlink()
-            print("✅ Removed sample_document.txt")
+            print(" Removed sample_document.txt")
     except Exception as e:
-        print(f"⚠️  Cleanup warning: {e}")
+        print(f"  Cleanup warning: {e}")
 
 def main():
     """Run the complete demo."""
-    print("🚀 Knowledge-base Search Engine Demo")
+    print(" Knowledge-base Search Engine Demo")
     print("=" * 50)
     
     # Step 1: Check API health
@@ -229,7 +229,7 @@ def main():
     
     # Step 3: Upload documents
     if not upload_documents():
-        print("❌ Demo stopped due to upload failure")
+        print(" Demo stopped due to upload failure")
         return
     
     # Step 4: Get database stats
@@ -241,8 +241,8 @@ def main():
     # Step 6: Cleanup
     cleanup()
     
-    print("\n🎉 Demo completed successfully!")
-    print("\n💡 Next steps:")
+    print("\n Demo completed successfully!")
+    print("\n Next steps:")
     print("   - Try the React frontend: cd frontend && npm start")
     print("   - Upload your own documents via the API")
     print("   - Ask more specific questions about your content")
