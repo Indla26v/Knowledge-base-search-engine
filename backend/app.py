@@ -15,7 +15,6 @@ from ingestion import DocumentIngestion
 from retriever import VectorRetriever
 from rag_pipeline import RAGPipeline
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Configure appropriately for production
@@ -35,34 +33,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- NEW COMPONENT INITIALIZATION LOGIC ---
 
-# 1. Create a single, shared ChromaDB client
 logger.info("Initializing shared ChromaDB client...")
 chroma_client = chromadb.PersistentClient(
     path="./chroma_db", 
     settings=Settings(anonymized_telemetry=False)
 )
 
-# 2. Get or create the shared collection
 collection = chroma_client.get_or_create_collection(
     name="knowledge_base",
     metadata={"description": "Document chunks for RAG system"}
 )
 logger.info(f"Connected to collection: {collection.name}")
 
-# 3. Initialize components, passing the shared objects to them
 ingestion = DocumentIngestion(collection=collection)
 retriever = VectorRetriever(client=chroma_client, collection=collection)
 rag_pipeline = RAGPipeline(retriever)
 
-# Create uploads directory if it doesn't exist
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
     return {
         "message": "Knowledge-base Search Engine API",
         "version": "1.0.0",
@@ -75,7 +67,6 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
     return {"status": "healthy", "message": "API is running"}
 
 @app.post("/upload")
@@ -96,7 +87,6 @@ async def upload_documents(files: List[UploadFile] = File(...)):
         results = []
         
         for file in files:
-            # Validate file type
             if not file.filename.lower().endswith(('.pdf', '.txt')):
                 results.append({
                     "filename": file.filename,
@@ -106,13 +96,11 @@ async def upload_documents(files: List[UploadFile] = File(...)):
                 continue
             
             try:
-                # Save uploaded file
                 file_path = UPLOAD_DIR / file.filename
                 with open(file_path, "wb") as buffer:
                     content = await file.read()
                     buffer.write(content)
                 
-                # Ingest document
                 logger.info(f"Processing file: {file.filename}")
                 chunks = ingestion.process_document(str(file_path))
                 
@@ -123,7 +111,6 @@ async def upload_documents(files: List[UploadFile] = File(...)):
                     "message": f"Successfully processed {len(chunks)} chunks"
                 })
                 
-                # Clean up uploaded file
                 os.remove(file_path)
                 
             except Exception as e:
@@ -166,7 +153,6 @@ async def query_documents(
         
         logger.info(f"Processing query: {question}")
         
-        # Get RAG response
         response = rag_pipeline.answer_query(
             question=question,
             top_k=top_k,
@@ -181,7 +167,6 @@ async def query_documents(
 
 @app.get("/stats")
 async def get_stats():
-    """Get database statistics."""
     try:
         stats = retriever.get_collection_stats()
         return JSONResponse(content=stats)
@@ -191,9 +176,7 @@ async def get_stats():
 
 @app.delete("/clear-database")
 async def clear_database():
-    """Clear all data from the database."""
     try:
-        # Pass the 'ingestion' instance to the clear_collection method
         result = retriever.clear_collection(ingestion_instance=ingestion)
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
