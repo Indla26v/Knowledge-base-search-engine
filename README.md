@@ -37,7 +37,7 @@ A complete **RAG (Retrieval-Augmented Generation)** powered document search and 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone <https://github.com/Indla26v/Knowledge-base-search-engine>
    cd knowledge-base-search-engine
    ```
 
@@ -136,11 +136,8 @@ curl -X POST "http://localhost:8000/query" \
 Create a `.env` file in the `backend` directory:
 
 ```env
-# Required for OpenAI integration
-OPENAI_API_KEY=your_api_key_here
-
-# Optional configurations
-OPENAI_MODEL=gpt-3.5-turbo
+# Required for Anthropic integration
+Claude_API_KEY=your_api_key_here
 EMBEDDING_MODEL=all-MiniLM-L6-v2
 CHROMA_PERSIST_DIRECTORY=./chroma_db
 ```
@@ -148,7 +145,7 @@ CHROMA_PERSIST_DIRECTORY=./chroma_db
 ### Model Settings
 
 - **Embedding Model**: `all-MiniLM-L6-v2` (default, fast and efficient)
-- **LLM Model**: `gpt-3.5-turbo` (default, cost-effective)
+- **LLM Model**: `claude-3-haiku-20240307` (default, cost-effective)
 - **Chunk Size**: 1000 characters with 200 character overlap
 
 ## 📁 Project Structure
@@ -292,7 +289,7 @@ mypy .
 3. **Top-K**: Start with 5-10 chunks for good balance of context and speed
 4. **Batch Processing**: Process multiple documents in batches for better performance
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -300,17 +297,17 @@ mypy .
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+##  Support
 
 - **Documentation**: Check this README and inline code comments
 - **Issues**: Open an issue on GitHub
 - **Discussions**: Use GitHub Discussions for questions
 
-## 🔮 Roadmap
+##  Roadmap
 
 - [ ] Support for more document formats (DOCX, HTML, etc.)
 - [ ] Advanced chunking strategies (semantic chunking)
@@ -323,5 +320,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ using FastAPI, ChromaDB, and OpenAI**
+**Built using FastAPI, ChromaDB, and Claude**
 
