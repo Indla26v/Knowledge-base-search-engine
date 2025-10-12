@@ -9,7 +9,6 @@ from typing import List, Dict, Any, Optional
 import anthropic
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -18,11 +17,9 @@ class RAGPipeline:
     """RAG pipeline that combines retrieval and generation."""
     
     def __init__(self, retriever, model_name: str = "claude-3-haiku-20240307"):
-        # ...
         self.retriever = retriever
         self.model_name = model_name
 
-        # Initialize Anthropic client
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             logger.warning("ANTHROPIC_API_KEY not found. Using mock responses.")
@@ -32,16 +29,7 @@ class RAGPipeline:
             logger.info(f"Initialized Anthropic client with model: {model_name}")
     
     def combine_documents(self, chunks: List[Dict[str, Any]], max_length: int = 4000) -> str:
-        """
-        Combine retrieved chunks into context.
         
-        Args:
-            chunks: List of retrieved chunks
-            max_length: Maximum context length
-            
-        Returns:
-            Combined context string
-        """
         if not chunks:
             return ""
         
@@ -52,7 +40,6 @@ class RAGPipeline:
             chunk_text = chunk["text"]
             chunk_length = len(chunk_text)
             
-            # Check if adding this chunk would exceed max_length
             if current_length + chunk_length > max_length:
                 break
             
@@ -204,12 +191,7 @@ Answer:"""
             }
     
     def get_available_models(self) -> List[str]:
-        """
-        Get list of available OpenAI models.
         
-        Returns:
-            List of model names
-        """
         if not self.client:
             return ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"]
         
