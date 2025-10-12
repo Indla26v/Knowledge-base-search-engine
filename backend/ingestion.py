@@ -24,13 +24,10 @@ class DocumentIngestion:
                  chunk_size: int = 1000,
                  chunk_overlap: int = 200,
                  embedding_model: str = "all-MiniLM-L6-v2"):
-        """
-        Initialize the document ingestion pipeline with a shared collection.
-        """
+        
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         
-        # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -42,21 +39,12 @@ class DocumentIngestion:
         logger.info(f"Loading embedding model: {embedding_model}")
         self.embedding_model = SentenceTransformer(embedding_model)
         
-        # Use the shared collection from app.py
         self.collection = collection
         
         logger.info("Document ingestion pipeline initialized with shared collection")
     
     def extract_text_from_pdf(self, file_path: str) -> str:
-        """
-        Extract text from PDF file.
         
-        Args:
-            file_path: Path to PDF file
-            
-        Returns:
-            Extracted text content
-        """
         try:
             doc = fitz.open(file_path)
             text = ""
@@ -74,15 +62,7 @@ class DocumentIngestion:
             raise
     
     def extract_text_from_txt(self, file_path: str) -> str:
-        """
-        Extract text from TXT file.
         
-        Args:
-            file_path: Path to TXT file
-            
-        Returns:
-            Text content
-        """
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 text = file.read()
@@ -95,15 +75,7 @@ class DocumentIngestion:
             raise
     
     def extract_text(self, file_path: str) -> str:
-        """
-        Extract text from file based on extension.
         
-        Args:
-            file_path: Path to file
-            
-        Returns:
-            Extracted text content
-        """
         file_extension = Path(file_path).suffix.lower()
         
         if file_extension == '.pdf':
@@ -114,16 +86,7 @@ class DocumentIngestion:
             raise ValueError(f"Unsupported file type: {file_extension}")
     
     def create_chunks(self, text: str, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Split text into chunks with metadata.
         
-        Args:
-            text: Text content to chunk
-            metadata: Metadata for the document
-            
-        Returns:
-            List of chunk dictionaries
-        """
         # Split text into chunks
         text_chunks = self.text_splitter.split_text(text)
         
@@ -145,15 +108,7 @@ class DocumentIngestion:
         return chunks
     
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """
-        Generate embeddings for text chunks.
         
-        Args:
-            texts: List of text chunks
-            
-        Returns:
-            List of embedding vectors
-        """
         try:
             embeddings = self.embedding_model.encode(texts, convert_to_tensor=False)
             return embeddings.tolist()
@@ -170,13 +125,11 @@ class DocumentIngestion:
             embeddings: List of embedding vectors
         """
         try:
-            # Prepare data for ChromaDB
             ids = []
             documents = []
             metadatas = []
             
             for i, chunk in enumerate(chunks):
-                # Generate unique ID for chunk
                 chunk_id = hashlib.md5(
                     f"{chunk['metadata']['filename']}_{chunk['metadata']['chunk_index']}".encode()
                 ).hexdigest()
@@ -185,7 +138,6 @@ class DocumentIngestion:
                 documents.append(chunk["text"])
                 metadatas.append(chunk["metadata"])
             
-            # Add to collection
             self.collection.add(
                 ids=ids,
                 documents=documents,
@@ -200,24 +152,14 @@ class DocumentIngestion:
             raise
     
     def process_document(self, file_path: str) -> List[Dict[str, Any]]:
-        """
-        Complete document processing pipeline.
         
-        Args:
-            file_path: Path to document file
-            
-        Returns:
-            List of processed chunks
-        """
         try:
-            # Extract text
             text = self.extract_text(file_path)
             
             if not text.strip():
                 logger.warning(f"No text extracted from {file_path}")
                 return []
             
-            # Create metadata
             file_info = Path(file_path)
             metadata = {
                 "filename": file_info.name,
@@ -226,18 +168,15 @@ class DocumentIngestion:
                 "file_type": file_info.suffix.lower()
             }
             
-            # Create chunks
             chunks = self.create_chunks(text, metadata)
             
             if not chunks:
                 logger.warning(f"No chunks created from {file_path}")
                 return []
             
-            # Generate embeddings
             texts = [chunk["text"] for chunk in chunks]
             embeddings = self.generate_embeddings(texts)
             
-            # Store in vector database
             self.store_chunks(chunks, embeddings)
             
             logger.info(f"Successfully processed document: {file_path}")
@@ -248,12 +187,7 @@ class DocumentIngestion:
             raise
     
     def get_collection_stats(self) -> Dict[str, Any]:
-        """
-        Get statistics about the collection.
         
-        Returns:
-            Dictionary with collection statistics
-        """
         try:
             count = self.collection.count()
             return {
