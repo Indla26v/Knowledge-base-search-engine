@@ -1,73 +1,93 @@
 # Knowledge-base Search Engine
 
-A complete **RAG (Retrieval-Augmented Generation)** powered document search and question-answering system built with Python, FastAPI, and ChromaDB.
-Demo video:https://drive.google.com/file/d/1ukrYPc5fljmv3k72U447jG3HlAdp1zHK/view?usp=sharing
+A complete **RAG (Retrieval-Augmented Generation)** powered document search and question-answering system built with **Spring Boot**, **Spring AI**, and **React**.
 
-## 🎯 Features
+Demo video: https://drive.google.com/file/d/1ukrYPc5fljmv3k72U447jG3HlAdp1zHK/view?usp=sharing
+
+##  Features
 
 - **Document Ingestion**: Upload and process PDF and TXT files
 - **Intelligent Chunking**: Split documents into optimal chunks for better retrieval
-- **Vector Search**: Use embeddings to find semantically similar content
+- **Vector Search**: Use ONNX embeddings to find semantically similar content
 - **RAG Pipeline**: Combine retrieval with LLM generation for accurate answers
-- **RESTful API**: Clean FastAPI endpoints for easy integration
-- **Optional Frontend**: React-based web interface
+- **RESTful API**: Clean Spring Boot REST endpoints for easy integration
+- **React Frontend**: Full-featured web interface with upload, query, and stats views
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Document      │    │   Text          │    │   Vector        │
-│   Upload        │───▶│   Processing    │───▶│   Database      │
-│   (PDF/TXT)     │    │   & Chunking    │    │   (ChromaDB)    │
+│   Upload        │───▶│   Processing    │───▶│   Store         │
+│   (PDF/TXT)     │    │   & Chunking    │    │ (SimpleVector)  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                         │
+                                                        │
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   User Query    │───▶│   Vector        │───▶│   LLM           │
-│   & Response    │    │   Retrieval     │    │   Generation    │
+│   & Response    │    │   Retrieval     │    │   (Anthropic)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 Quick Start
+##  Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend Framework** | Spring Boot 3.3 (Java 17) |
+| **AI/RAG Framework** | Spring AI 1.0.0-M1 |
+| **LLM Provider** | Anthropic Claude (claude-haiku-4-5) |
+| **Embeddings** | Spring AI Transformers (ONNX, all-MiniLM-L6-v2) |
+| **Vector Store** | Spring AI SimpleVectorStore (file-backed) |
+| **Document Parsing** | Spring AI PagePdfDocumentReader |
+| **Frontend** | React 18 |
+| **Build Tool** | Maven 3.9+ |
+
+##  Quick Start
 
 ### Prerequisites
 
-- Python 3.10+
-- Claude API key (optional, for LLM generation)
+- Java 17+ (or use the portable JDK in `tools/`)
+- Maven 3.9+ (or use the portable Maven in `tools/`)
+- Node.js 16+ and npm
+- Anthropic API key
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <https://github.com/Indla26v/Knowledge-base-search-engine>
-   cd knowledge-base-search-engine
+   git clone https://github.com/Indla26v/Knowledge-base-search-engine
+   cd Knowledge-base-search-engine
    ```
 
-2. **Create virtual environment**
+2. **Configure your API key**
+
+   Edit `spring-backend/src/main/resources/application.yml` and set your Anthropic API key:
+   ```yaml
+   spring:
+     ai:
+       anthropic:
+         api-key: YOUR_ANTHROPIC_API_KEY
+   ```
+
+3. **Start the Spring Boot backend**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+   # Option A: Use the convenience script (uses portable Java/Maven in tools/)
+   .\run_spring_backend.bat
 
-3. **Install dependencies**
+   # Option B: Use system Java/Maven
+   cd spring-backend
+   mvn spring-boot:run
+   ```
+   The backend API will be available at `http://localhost:8080`
+
+4. **Start the React frontend**
    ```bash
-   cd backend
-   pip install -r requirements.txt
+   cd frontend
+   npm install
+   npm start
    ```
+   The frontend will be available at `http://localhost:3000`
 
-4. **Set up environment variables**
-   ```bash
-   cp env.example .env
-   # Edit .env and add your OpenAI API key
-   ```
-
-5. **Run the application**
-   ```bash
-   python app.py
-   ```
-
-The API will be available at `http://localhost:8000`
-
-## 📚 API Endpoints
+##  API Endpoints
 
 ### Core Endpoints
 
@@ -78,11 +98,12 @@ The API will be available at `http://localhost:8000`
 | `POST` | `/upload` | Upload documents (PDF/TXT) |
 | `POST` | `/query` | Ask questions and get RAG-generated answers |
 | `GET` | `/stats` | Get database statistics |
+| `DELETE` | `/clear-database` | Clear all documents from the vector store |
 
 ### Upload Documents
 
 ```bash
-curl -X POST "http://localhost:8000/upload" \
+curl -X POST "http://localhost:8080/upload" \
   -H "Content-Type: multipart/form-data" \
   -F "files=@document1.pdf" \
   -F "files=@document2.txt"
@@ -91,13 +112,12 @@ curl -X POST "http://localhost:8000/upload" \
 **Response:**
 ```json
 {
-  "message": "Document processing completed",
   "results": [
     {
       "filename": "document1.pdf",
       "status": "success",
       "chunks_created": 15,
-      "message": "Successfully processed 15 chunks"
+      "message": "Successfully processed document1.pdf into 15 chunks"
     }
   ]
 }
@@ -106,7 +126,7 @@ curl -X POST "http://localhost:8000/upload" \
 ### Query Documents
 
 ```bash
-curl -X POST "http://localhost:8000/query" \
+curl -X POST "http://localhost:8080/query" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "question=What is machine learning?" \
   -d "top_k=5" \
@@ -130,75 +150,108 @@ curl -X POST "http://localhost:8000/query" \
 }
 ```
 
-## 🔧 Configuration
+##  Configuration
 
-### Environment Variables
+### application.yml
 
-Create a `.env` file in the `backend` directory:
+The main configuration file is located at `spring-backend/src/main/resources/application.yml`:
 
-```env
-# Required for Anthropic integration
-Claude_API_KEY=your_api_key_here
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-CHROMA_PERSIST_DIRECTORY=./chroma_db
+```yaml
+spring:
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:your-key-here}
+      chat:
+        options:
+          model: claude-haiku-4-5
+          max-tokens: 2048
+          temperature: 0.7
 ```
 
-### Model Settings
+### Key Settings
 
-- **Embedding Model**: `all-MiniLM-L6-v2` (default, fast and efficient)
-- **LLM Model**: `claude-3-haiku-20240307` (default, cost-effective)
+- **Embedding Model**: `all-MiniLM-L6-v2` (ONNX, runs locally — no API calls needed)
+- **LLM Model**: `claude-haiku-4-5` (fast and cost-effective)
 - **Chunk Size**: 1000 characters with 200 character overlap
+- **Server Port**: 8080
 
 ## 📁 Project Structure
 
 ```
-knowledge-base-search-engine/
-├── backend/
-│   ├── app.py                 # FastAPI application
-│   ├── ingestion.py           # Document processing pipeline
-│   ├── retriever.py           # Vector search and retrieval
-│   ├── rag_pipeline.py        # RAG orchestration
-│   ├── requirements.txt       # Python dependencies
-│   ├── env.example           # Environment variables template
-│   └── utils/
-│       ├── __init__.py
-│       └── helpers.py         # Utility functions
-├── frontend/                  # Optional React frontend
+Knowledge-base-search-engine/
+├── spring-backend/
+│   ├── pom.xml                                    # Maven dependencies
+│   ├── src/main/java/com/example/rag/
+│   │   ├── RagApplication.java                    # Spring Boot entry point
+│   │   ├── config/
+│   │   │   ├── AiConfig.java                      # VectorStore & ChatClient beans
+│   │   │   └── CorsConfig.java                    # CORS configuration
+│   │   ├── controller/
+│   │   │   └── KnowledgeBaseController.java       # REST API endpoints
+│   │   ├── dto/
+│   │   │   ├── IngestionResponse.java             # Upload response DTO
+│   │   │   ├── QueryResponse.java                 # Query response DTO
+│   │   │   └── StatsResponse.java                 # Stats response DTO
+│   │   └── service/
+│   │       ├── DocumentIngestionService.java       # PDF/TXT parsing & chunking
+│   │       └── RagPipelineService.java             # RAG orchestration
+│   └── src/main/resources/
+│       └── application.yml                         # App configuration
+├── frontend/                                       # React frontend
+│   ├── src/
+│   │   ├── App.js                                 # Main app with tabs
+│   │   └── components/
+│   │       ├── FileUpload.js                      # Drag-and-drop upload
+│   │       ├── QueryInterface.js                  # Question input form
+│   │       ├── ResultsDisplay.js                  # Answer & citations display
+│   │       └── StatsDisplay.js                    # Database statistics
+│   └── package.json
+├── tools/                                          # Portable JDK & Maven
+├── run_spring_backend.bat                          # Convenience startup script
 └── README.md
 ```
 
-## 🧠 How It Works
+##  How It Works
 
 ### 1. Document Processing
-- **Text Extraction**: PDFs and TXT files are parsed to extract text
-- **Chunking**: Text is split into 1000-character chunks with 200-character overlap
-- **Embedding Generation**: Each chunk is converted to a vector using sentence transformers
-- **Storage**: Chunks and embeddings are stored in ChromaDB
+- **Text Extraction**: PDFs are parsed with Spring AI's `PagePdfDocumentReader`; TXT files via standard Java I/O
+- **Chunking**: Text is split into 1000-character chunks with 200-character overlap using `TokenTextSplitter`
+- **Embedding Generation**: Each chunk is embedded locally using an ONNX model (all-MiniLM-L6-v2)
+- **Storage**: Chunks and embeddings are stored in `SimpleVectorStore` (persisted to `vector_store.json`)
 
 ### 2. Query Processing
-- **Query Embedding**: User question is converted to a vector
-- **Similarity Search**: Vector database finds most similar chunks
-- **Context Assembly**: Relevant chunks are combined into context
-- **Answer Generation**: LLM generates answer using retrieved context
+- **Query Embedding**: User question is embedded using the same ONNX model
+- **Similarity Search**: Vector store finds the most similar chunks via cosine similarity
+- **Context Assembly**: Top-K relevant chunks are combined into context
+- **Answer Generation**: Anthropic Claude generates an answer using the retrieved context
 
-### 3. RAG Pipeline
-```python
-def answer_query(question: str):
-    # 1. Retrieve relevant chunks
-    relevant_chunks = retriever.get_top_k(question, top_k=5)
-    
-    # 2. Combine chunks into context
-    context = combine_documents(relevant_chunks)
-    
-    # 3. Generate answer with LLM
-    answer = llm.generate(context, question)
-    
-    return answer
+### 3. RAG Pipeline (Java)
+```java
+public QueryResponse query(String question, int topK, boolean includeSources) {
+    // 1. Retrieve relevant chunks
+    List<Document> docs = vectorStore.similaritySearch(
+        SearchRequest.query(question).withTopK(topK)
+    );
+
+    // 2. Build context from retrieved documents
+    String context = docs.stream()
+        .map(doc -> "Source: " + doc.getMetadata().get("filename") + "\n" + doc.getContent())
+        .collect(Collectors.joining("\n\n"));
+
+    // 3. Generate answer with Anthropic Claude
+    String answer = chatClient.prompt()
+        .system(s -> s.text(systemPrompt).param("context", context))
+        .user(question)
+        .call()
+        .content();
+
+    return new QueryResponse(answer, sources, sources.size(), question);
+}
 ```
 
-## 🎨 Optional Frontend
+##  Frontend
 
-A React-based frontend is available for easy interaction:
+The React frontend provides a full-featured interface:
 
 ```bash
 cd frontend
@@ -207,34 +260,32 @@ npm start
 ```
 
 Features:
-- Drag-and-drop file upload
-- Real-time query interface
-- Answer display with source citations
-- Document management
+- **Upload Documents** — Drag-and-drop file upload with progress indicators
+- **Ask Questions** — Real-time query interface with configurable source count
+- **Source Citations** — Answer display with chunk index and similarity score
+- **Database Stats** — View total chunks, collection info, and clear the database
 
-## 🔍 Example Usage
+##  Example Usage
 
-### Python Client Example
+### cURL Examples
 
-```python
-import requests
-
+```bash
 # Upload documents
-files = [
-    ('files', open('document.pdf', 'rb')),
-    ('files', open('notes.txt', 'rb'))
-]
-response = requests.post('http://localhost:8000/upload', files=files)
-print(response.json())
+curl -X POST "http://localhost:8080/upload" \
+  -F "files=@document.pdf" \
+  -F "files=@notes.txt"
 
 # Query documents
-query_data = {
-    'question': 'What are the main benefits of renewable energy?',
-    'top_k': 5,
-    'include_sources': True
-}
-response = requests.post('http://localhost:8000/query', data=query_data)
-print(response.json())
+curl -X POST "http://localhost:8080/query" \
+  -d "question=What are the main benefits of renewable energy?" \
+  -d "top_k=5" \
+  -d "include_sources=true"
+
+# Get stats
+curl http://localhost:8080/stats
+
+# Clear database
+curl -X DELETE http://localhost:8080/clear-database
 ```
 
 ### JavaScript Client Example
@@ -244,7 +295,7 @@ print(response.json())
 const formData = new FormData();
 formData.append('files', fileInput.files[0]);
 
-fetch('http://localhost:8000/upload', {
+fetch('http://localhost:8080/upload', {
   method: 'POST',
   body: formData
 })
@@ -252,7 +303,7 @@ fetch('http://localhost:8000/upload', {
 .then(data => console.log(data));
 
 // Query documents
-fetch('http://localhost:8000/query', {
+fetch('http://localhost:8080/query', {
   method: 'POST',
   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   body: 'question=What is artificial intelligence?&top_k=5&include_sources=true'
@@ -261,34 +312,12 @@ fetch('http://localhost:8000/query', {
 .then(data => console.log(data));
 ```
 
-## 🛠️ Development
+##  Performance Tips
 
-### Running Tests
-
-```bash
-cd backend
-pytest tests/
-```
-
-### Code Quality
-
-```bash
-# Format code
-black .
-
-# Lint code
-flake8 .
-
-# Type checking
-mypy .
-```
-
-## 📊 Performance Tips
-
-1. **Chunk Size**: Adjust chunk size based on your documents (500-1000 characters recommended)
-2. **Embedding Model**: Use `all-MiniLM-L6-v2` for speed or `all-mpnet-base-v2` for accuracy
-3. **Top-K**: Start with 5-10 chunks for good balance of context and speed
-4. **Batch Processing**: Process multiple documents in batches for better performance
+1. **Chunk Size**: Adjust chunk size based on your documents (500–1000 characters recommended)
+2. **Embedding Model**: The ONNX model runs locally with zero API latency
+3. **Top-K**: Start with 3–5 chunks for good balance of context and speed
+4. **Batch Processing**: Upload multiple documents at once for efficient processing
 
 ##  Contributing
 
@@ -298,7 +327,7 @@ mypy .
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-##  License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -318,8 +347,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Integration with cloud storage (S3, GCS)
 - [ ] Docker containerization
 - [ ] Kubernetes deployment guides
+- [ ] Migrate to ChromaDB or pgvector for production use
 
 ---
 
-**Built using FastAPI, ChromaDB, and Claude**
-
+**Built with Spring Boot, Spring AI, and React • Powered by RAG**
