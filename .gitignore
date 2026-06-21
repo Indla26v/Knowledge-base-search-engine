@@ -16,7 +16,9 @@ tools/
 # Spring Boot & Java
 spring-backend/target/
 spring-backend/.mvn/wrapper/maven-wrapper.jar
+spring-backend/src/main/resources/application.yml
 spring-backend/logs/
+spring-backend/vector_store.json
 *.class
 
 # IDE configurations
