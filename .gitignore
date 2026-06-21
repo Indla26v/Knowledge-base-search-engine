@@ -9,3 +9,20 @@ backend/chroma_db/
 backend/uploads/
 
 __pycache__/
+
+# Local Tools
+tools/
+
+# Spring Boot & Java
+spring-backend/target/
+spring-backend/.mvn/wrapper/maven-wrapper.jar
+spring-backend/logs/
+*.class
+
+# IDE configurations
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
