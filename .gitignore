@@ -1,30 +1,78 @@
-venv/
-
-node_modules/
-
-.env
-
-backend/chroma_db/
-
-backend/uploads/
-
-__pycache__/
-
-# Local Tools
+# ==========================================
+# Tools
+# ==========================================
+# Ignore the entire local tools directory (contains portable JDK and Maven)
 tools/
 
-# Spring Boot & Java
+# ==========================================
+# Frontend (React App)
+# ==========================================
+# Dependencies
+frontend/node_modules/
+frontend/.pnp/
+frontend/.pnp.js
+
+# Production / Build Output
+frontend/build/
+
+# Testing
+frontend/coverage/
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Local environment overrides
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Editor/Lint cache
+frontend/.eslintcache
+
+
+# ==========================================
+# Spring Backend (Spring Boot & Maven)
+# ==========================================
+# Build output
 spring-backend/target/
-spring-backend/.mvn/wrapper/maven-wrapper.jar
-spring-backend/src/main/resources/application.yml
-spring-backend/logs/
+spring-backend/bin/
+
+# Local Vector Store database (JSON file)
 spring-backend/vector_store.json
+
+# Local configurations / credentials (contains API keys)
+spring-backend/src/main/resources/application.yml
+
+# Logs
+spring-backend/logs/
+spring-backend/*.log
+
+# Maven wrapper jar
+spring-backend/.mvn/wrapper/maven-wrapper.jar
+
+# Compiled class files
 *.class
 
-# IDE configurations
+
+# ==========================================
+# IDE & Editor Configurations
+# ==========================================
 .idea/
 .vscode/
 *.iml
 .project
 .classpath
 .settings/
+*.sublime-project
+*.sublime-workspace
+
+
+# ==========================================
+# System / OS Files
+# ==========================================
+.DS_Store
+Thumbs.db
